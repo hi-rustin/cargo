@@ -125,7 +125,7 @@ fn walk(path: &Path, callback: &mut dyn FnMut(&Path) -> CargoResult<bool>) -> Ca
 }
 
 fn has_manifest(path: &Path) -> bool {
-    find_project_manifest_exact(path, "Cargo.toml").is_ok()
+    find_project_manifest_exact(path, "Cargo1.toml").is_ok()
 }
 
 fn read_nested_packages(
@@ -140,7 +140,7 @@ fn read_nested_packages(
         return Ok(());
     }
 
-    let manifest_path = find_project_manifest_exact(path, "Cargo.toml")?;
+    let manifest_path = find_project_manifest_exact(path, "Cargo1.toml")?;
 
     let (manifest, nested) = match read_manifest(&manifest_path, source_id, config) {
         Err(err) => {

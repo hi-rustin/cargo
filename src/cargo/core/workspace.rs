@@ -193,7 +193,7 @@ impl<'cfg> Workspace<'cfg> {
         config: &'cfg Config,
     ) -> CargoResult<Workspace<'cfg>> {
         let mut ws = Workspace::new_default(current_manifest, config);
-        ws.root_manifest = Some(root_path.join("Cargo.toml"));
+        ws.root_manifest = Some(root_path.join("Cargo1.toml"));
         ws.target_dir = config.target_dir()?;
         ws.packages
             .packages
@@ -588,7 +588,7 @@ impl<'cfg> Workspace<'cfg> {
                 .parent()
                 .unwrap()
                 .join(root_link)
-                .join("Cargo.toml");
+                .join("Cargo1.toml");
             debug!("find_root - pointer {}", path.display());
             paths::normalize_path(&path)
         }
@@ -614,7 +614,7 @@ impl<'cfg> Workspace<'cfg> {
 
             let ances_manifest_path = path.join("Cargo.toml");
             debug!("find_root - trying {}", ances_manifest_path.display());
-            if ances_manifest_path.exists() {
+            if ances_manifest_path.exists() || path.join("Cargo1.toml").exists() {
                 match *self.packages.load(&ances_manifest_path)?.workspace_config() {
                     WorkspaceConfig::Root(ref ances_root_config) => {
                         debug!("find_root - found a root checking exclusion");
@@ -684,7 +684,7 @@ impl<'cfg> Workspace<'cfg> {
         };
 
         for path in &members_paths {
-            self.find_path_deps(&path.join("Cargo.toml"), &root_manifest_path, false)
+            self.find_path_deps(&path.join("Cargo1.toml"), &root_manifest_path, false)
                 .with_context(|| {
                     format!(
                         "failed to load manifest for workspace member `{}`",
@@ -696,7 +696,7 @@ impl<'cfg> Workspace<'cfg> {
         if let Some(default) = default_members_paths {
             for path in default {
                 let normalized_path = paths::normalize_path(&path);
-                let manifest_path = normalized_path.join("Cargo.toml");
+                let manifest_path = normalized_path.join("Cargo1.toml");
                 if !self.members.contains(&manifest_path) {
                     // default-members are allowed to be excluded, but they
                     // still must be referred to by the original (unfiltered)
@@ -767,7 +767,7 @@ impl<'cfg> Workspace<'cfg> {
                 .map(|d| (d.source_id(), d.package_name()))
                 .filter(|(s, _)| s.is_path())
                 .filter_map(|(s, n)| s.url().to_file_path().ok().map(|p| (p, n)))
-                .map(|(p, n)| (p.join("Cargo.toml"), n))
+                .map(|(p, n)| (p.join("Cargo1.toml"), n))
                 .collect::<Vec<_>>()
         };
         for (path, name) in candidates {
@@ -1057,7 +1057,7 @@ impl<'cfg> Workspace<'cfg> {
                 MaybePackage::Package(pkg) => pkg.manifest().warnings().warnings(),
                 MaybePackage::Virtual(vm) => vm.warnings().warnings(),
             };
-            let path = path.join("Cargo.toml");
+            let path = path.join("Cargo1.toml");
             for warning in warnings {
                 if warning.is_critical {
                     let err = anyhow::format_err!("{}", warning.message);

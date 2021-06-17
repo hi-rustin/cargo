@@ -37,7 +37,7 @@ use self::targets::targets;
 /// This could result in a real or virtual manifest being returned.
 ///
 /// A list of nested paths is also returned, one for each path dependency
-/// within the manfiest. For virtual manifests, these paths can only
+/// within the manifest. For virtual manifests, these paths can only
 /// come from patched or replaced dependencies. These paths are not
 /// canonicalized.
 pub fn read_manifest(
@@ -50,11 +50,21 @@ pub fn read_manifest(
         path.display(),
         source_id
     );
-    let contents = paths::read(path).map_err(|err| ManifestError::new(err, path.into()))?;
-
-    do_read_manifest(&contents, path, source_id, config)
-        .with_context(|| format!("failed to parse manifest at `{}`", path.display()))
-        .map_err(|err| ManifestError::new(err, path.into()))
+    match paths::read(path).map_err(|err| ManifestError::new(err, path.into())) {
+        Ok(contents) => do_read_manifest(&contents, path, source_id, config)
+            .with_context(|| format!("failed to parse manifest at `{}`", path.display()))
+            .map_err(|err| ManifestError::new(err, path.into())),
+        Err(_) => {
+            let path = &path.to_str().unwrap().replace("Cargo.toml", "Cargo1.toml");
+            let path = Path::new(path);
+            match paths::read(path).map_err(|err| ManifestError::new(err, path.into())) {
+                Ok(contents) => do_read_manifest(&contents, path, source_id, config)
+                    .with_context(|| format!("failed to parse manifest at `{}`", path.display()))
+                    .map_err(|err| ManifestError::new(err, path.into())),
+                Err(err) => Err(ManifestError::new(err, path.into())),
+            }
+        }
+    }
 }
 
 fn do_read_manifest(

@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 /// Finds the root `Cargo.toml`.
 pub fn find_root_manifest_for_wd(cwd: &Path) -> CargoResult<PathBuf> {
-    let file = "Cargo.toml";
+    let file = "Cargo1.toml";
     for current in paths::ancestors(cwd, None) {
         let manifest = current.join(file);
         if manifest.exists() {

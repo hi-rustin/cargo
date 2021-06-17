@@ -402,9 +402,9 @@ fn install_target_dir() {
 #[cargo_test]
 fn multiple_crates_error() {
     let p = git::repo(&paths::root().join("foo"))
-        .file("Cargo.toml", &basic_manifest("foo", "0.1.0"))
+        .file("Cargo1.toml", &basic_manifest("foo", "0.1.0"))
         .file("src/main.rs", "fn main() {}")
-        .file("a/Cargo.toml", &basic_manifest("bar", "0.1.0"))
+        .file("a/Cargo1.toml", &basic_manifest("bar", "0.1.0"))
         .file("a/src/main.rs", "fn main() {}")
         .build();
 
@@ -474,7 +474,7 @@ fn multiple_crates_git_all() {
 fn multiple_crates_auto_binaries() {
     let p = project()
         .file(
-            "Cargo.toml",
+            "Cargo1.toml",
             r#"
                 [package]
                 name = "foo"
@@ -486,7 +486,7 @@ fn multiple_crates_auto_binaries() {
             "#,
         )
         .file("src/main.rs", "extern crate bar; fn main() {}")
-        .file("a/Cargo.toml", &basic_manifest("bar", "0.1.0"))
+        .file("a/Cargo1.toml", &basic_manifest("bar", "0.1.0"))
         .file("a/src/lib.rs", "")
         .build();
 

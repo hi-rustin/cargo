@@ -109,7 +109,7 @@ impl<'cfg> Source for DirectorySource<'cfg> {
             // flexible with the contents of vendor directories but has the
             // downside of accidentally misconfigured vendor directories
             // silently returning less crates.
-            if !path.join("Cargo.toml").exists() {
+            if !path.join("Cargo1.toml").exists() {
                 continue;
             }
 

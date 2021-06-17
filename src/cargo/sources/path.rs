@@ -81,7 +81,7 @@ impl<'cfg> PathSource<'cfg> {
         } else if self.recursive {
             ops::read_packages(&self.path, self.source_id, self.config)
         } else {
-            let path = self.path.join("Cargo.toml");
+            let path = self.path.join("Cargo1.toml");
             let (pkg, _) = ops::read_package(&path, self.source_id, self.config)?;
             Ok(vec![pkg])
         }
@@ -161,7 +161,7 @@ impl<'cfg> PathSource<'cfg> {
             let rel = relative_path.as_os_str();
             if rel == "Cargo.lock" {
                 return Ok(pkg.include_lockfile());
-            } else if rel == "Cargo.toml" {
+            } else if rel == "Cargo1.toml" {
                 return Ok(true);
             }
 
@@ -212,7 +212,7 @@ impl<'cfg> PathSource<'cfg> {
                 return Ok(None);
             }
         };
-        let manifest_path = repo_relative_path.join("Cargo.toml");
+        let manifest_path = repo_relative_path.join("Cargo1.toml");
         if index.get_path(&manifest_path, 0).is_some() {
             return Ok(Some(repo));
         }
@@ -289,7 +289,7 @@ impl<'cfg> PathSource<'cfg> {
                 // Keep track of all sub-packages found and also strip out all
                 // matches we've found so far. Note, though, that if we find
                 // our own `Cargo.toml`, we keep going.
-                Some("Cargo.toml") => {
+                Some("Cargo1.toml") => {
                     let path = file_path.parent().unwrap();
                     if path != pkg_path {
                         warn!("subpackage found: {}", path.display());
@@ -383,7 +383,7 @@ impl<'cfg> PathSource<'cfg> {
             return Ok(());
         }
         // Don't recurse into any sub-packages that we have.
-        if !is_root && path.join("Cargo.toml").exists() {
+        if !is_root && path.join("Cargo1.toml").exists() {
             return Ok(());
         }
 
