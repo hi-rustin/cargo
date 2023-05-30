@@ -5165,3 +5165,96 @@ fn custom_build_closes_stdin() {
         .build();
     p.cargo("build").run();
 }
+
+#[cargo_test]
+fn test_both_two_semicolons_and_one_semicolon_syntax() {
+    let p = project()
+        .file(
+            "Cargo.toml",
+            r#"
+                [package]
+                name = "foo"
+                version = "0.0.1"
+                authors = []
+                build = "build.rs"
+            "#,
+        )
+        .file(
+            "src/main.rs",
+            r#"
+                const FOO: &'static str = env!("FOO");
+                const BAR: &'static str = env!("BAR");
+                fn main() {
+                    println!("{}", FOO);
+                    println!("{}", BAR);
+                }
+            "#,
+        )
+        .file(
+            "build.rs",
+            r#"fn main() {
+                println!("cargo::rustc-env=FOO=foo");
+                println!("cargo:rustc-env=BAR=bar");
+                println!("cargo:foo=foo");
+                println!("cargo::metadata=bar=bar");
+            }"#,
+        )
+        .build();
+    p.cargo("build -v").run();
+    p.cargo("run -v").with_stdout("foo\nbar\n").run();
+}
+
+#[cargo_test]
+fn test_invalid_new_syntaxes() {
+    // `metadata` can not be used with the reserved keys.
+    let p = project()
+        .file("src/lib.rs", "")
+        .file(
+            "build.rs",
+            r#"
+                fn main() {
+                    println!("cargo::metadata=rerun-if-changed=somedir");
+                }
+            "#,
+        )
+        .build();
+
+    p.cargo("build")
+        .with_status(101)
+        .with_stderr(
+            "\
+[COMPILING] foo [..]
+error: invalid output in build script of `foo v0.0.1 ([ROOT]/foo)`: `cargo::metadata=rerun-if-changed=somedir`
+The reserved key cannot be used in the `cargo::metadata=` syntax. Please use `cargo::rerun-if-changed=VAlUE` instead.
+See https://doc.rust-lang.org/cargo/reference/build-scripts.html#outputs-of-the-build-script \
+for more information about build script outputs.
+",
+        )
+        .run();
+
+    // `cargo::` can not be used with the non-reserved keys.
+    let p = project()
+        .file("src/lib.rs", "")
+        .file(
+            "build.rs",
+            r#"
+                fn main() {
+                    println!("cargo::foo=bar");
+                }
+            "#,
+        )
+        .build();
+
+    p.cargo("build")
+        .with_status(101)
+        .with_stderr(
+            "\
+[COMPILING] foo [..]
+error: invalid output in build script of `foo v0.0.1 ([ROOT]/foo)`: `cargo::foo=bar`
+Expected a line with `cargo::metadata=KEY=VALUE` but it did not have the `metadata=` part.
+See https://doc.rust-lang.org/cargo/reference/build-scripts.html#outputs-of-the-build-script \
+for more information about build script outputs.
+",
+        )
+        .run();
+}
