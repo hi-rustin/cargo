@@ -390,7 +390,7 @@ fn build_script_feedback() {
         .file("src/main.rs", "fn main() {}")
         .file(
             "build.rs",
-            r#"fn main() { println!("cargo:rustc-check-cfg=names(foo)"); }"#,
+            r#"fn main() { println!("cargo::rustc-check-cfg=names(foo)"); }"#,
         )
         .build();
 
@@ -416,7 +416,7 @@ fn build_script_doc() {
         .file("src/main.rs", "fn main() {}")
         .file(
             "build.rs",
-            r#"fn main() { println!("cargo:rustc-check-cfg=names(foo)"); }"#,
+            r#"fn main() { println!("cargo::rustc-check-cfg=names(foo)"); }"#,
         )
         .build();
     p.cargo("doc -v -Zcheck-cfg=output")
@@ -486,9 +486,9 @@ fn build_script_test() {
         )
         .file(
             "build.rs",
-            r#"fn main() { 
-                println!("cargo:rustc-check-cfg=names(foo)");
-                println!("cargo:rustc-cfg=foo");
+            r#"fn main() {
+                println!("cargo::rustc-check-cfg=names(foo)");
+                println!("cargo::rustc-cfg=foo");
             }"#,
         )
         .file(

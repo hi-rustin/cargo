@@ -174,7 +174,7 @@ fn plugin_with_dynamic_native_dependency() {
                         fs::copy(root.join("builder.dll.lib"),
                                  out_dir.join("builder.dll.lib")).unwrap();
                     }
-                    println!("cargo:rustc-flags=-L {}", out_dir.display());
+                    println!("cargo::rustc-flags=-L {}", out_dir.display());
                 }
             "#,
         )
