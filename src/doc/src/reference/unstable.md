@@ -1317,7 +1317,7 @@ Or for `output`:
 
 ```rust,no_run
 // build.rs
-println!("cargo:rustc-check-cfg=names(foo, bar)");
+println!("cargo::rustc-check-cfg=names(foo, bar)");
 ```
 
 ```
@@ -1369,7 +1369,7 @@ codegen-backend = "cranelift"
 
 * Tracking Issue: [#11813](https://github.com/rust-lang/cargo/issues/11813)
 
-With the 'gitoxide' unstable feature, all or the specified git operations will be performed by 
+With the 'gitoxide' unstable feature, all or the specified git operations will be performed by
 the `gitoxide` crate instead of `git2`.
 
 While `-Zgitoxide` enables all currently implemented features, one can individually select git operations
