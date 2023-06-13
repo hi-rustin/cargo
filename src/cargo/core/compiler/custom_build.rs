@@ -753,31 +753,21 @@ impl BuildOutput {
                     .any(|prefix| data.starts_with(prefix))
                 {
                     parse_directive(whence.as_str(), line, data, new_syntax, false)?
-                }
-                // For instance, `cargo::metadata=foo=bar`.
-                else if let Some(data) = data.strip_prefix("metadata=") {
-                    // Reserved keys should not be used with the `cargo::metadata=` syntax.
-                    if let Some(prefix) = RESERVED_PREFIXES
-                        .iter()
-                        .find(|prefix| data.starts_with(*prefix))
-                    {
-                        bail!("invalid output in {}: `{}`\n\
-                            The reserved key cannot be used in the `cargo::metadata=` syntax. Please use `cargo::{}VAlUE` instead.\n\
-                            {}", whence, line, prefix, DOCS_LINK_SUGGESTION
-                        )
-                    }
-                    parse_directive(whence.as_str(), line, data, new_syntax, true)?
                 } else {
-                    bail!("invalid output in {}: `{}`\n\
-                        Expected a line with `cargo::metadata=KEY=VALUE` but it did not have the `metadata=` part.\n\
-                        {}", whence, line, DOCS_LINK_SUGGESTION
-                    )
+                    ("metadata", data)
                 }
             }
             // For backwards compatibility, we also accept lines that start with "cargo:".
             else if let Some(data) = line.strip_prefix("cargo:") {
-                // For instance, `cargo:rustc-flags=foo` or `cargo:foo=bar`.
-                parse_directive(whence.as_str(), line, data, false, false)?
+                // For instance, `cargo:rustc-flags=foo`.
+                if RESERVED_PREFIXES
+                    .iter()
+                    .any(|prefix| data.starts_with(prefix))
+                {
+                    parse_directive(whence.as_str(), line, data, false, false)?
+                } else {
+                    ("metadata", data)
+                }
             }
             // Skip this line since it doesn't start with "cargo:" or "cargo::".
             else {
@@ -942,7 +932,25 @@ impl BuildOutput {
                 "warning" => warnings.push(value.to_string()),
                 "rerun-if-changed" => rerun_if_changed.push(PathBuf::from(value)),
                 "rerun-if-env-changed" => rerun_if_env_changed.push(value.to_string()),
-                _ => metadata.push((key.to_string(), value.to_string())),
+                "metadata" => {
+                    let (key, value) = if let Some(value) = value.strip_prefix("metadata=") {
+                        // Reserved keys should not be used with the `cargo::metadata=` syntax.
+                        if let Some(prefix) = RESERVED_PREFIXES
+                            .iter()
+                            .find(|prefix| value.starts_with(*prefix))
+                        {
+                            bail!("invalid output in {}: `{}`\n\
+                            The reserved key cannot be used in the `cargo::metadata=` syntax. Please use `cargo::{}VAlUE` instead.\n\
+                            {}", whence, line, prefix, DOCS_LINK_SUGGESTION
+                        )
+                        }
+                        parse_directive(whence.as_str(), line, value, new_syntax, true)?
+                    } else {
+                        parse_directive(whence.as_str(), line, &value, new_syntax, false)?
+                    };
+                    metadata.push((key.to_string(), value.to_string()));
+                }
+                _ => unreachable!(),
             }
         }
 
