@@ -167,6 +167,7 @@ fn compile<'cfg>(
 ) -> CargoResult<()> {
     let bcx = cx.bcx;
     let build_plan = bcx.build_config.build_plan;
+    // Check if this unit has already been compiled, and if so, skip it.
     if !cx.compiled.insert(unit.clone()) {
         return Ok(());
     }
